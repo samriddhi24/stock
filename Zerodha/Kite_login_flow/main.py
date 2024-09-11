@@ -79,23 +79,25 @@ def println(text):
     for _ in range(20):
         print("*", sep="", end="")
         print(f"****************************\t{text}\t*******************")
-        print("*", sep="", end="")
+        print("*", sep="", end="\n")
 
 
 today = datetime.now().date()
 if __name__ == "__main__":
 
     start_date = today - timedelta(days=3653)  # Approximate 10 years
-    print(start_date)
-    print(start_date + timedelta(days=60))
-    days_per_batch = 60
-    i = 1
+    # print(start_date)
+    # print(start_date + timedelta(days=60))
     endDAte = start_date
     token = 351315
-    while endDAte < today:
-        try:
-            endDAte = getData(token, endDAte)
-            print("end: ", endDAte)
-        except Exception as e:
-            print("Error:", str(e))
-            break
+    for stock_symbol, instrument_token in symbol_token_dict.items():
+        println(f"working on {stock_symbol}")
+    # while endDAte < today:
+        if endDAte < today:
+            try:
+                endDAte = getData(instrument_token, endDAte)
+                print("end: ", endDAte)
+            except Exception as e:
+                print("Error:", str(e))
+                break
+    endDAte = start_date
