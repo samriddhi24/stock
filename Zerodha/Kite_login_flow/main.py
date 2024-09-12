@@ -65,15 +65,80 @@ async def fn():
     await asyncio.sleep(1)
     print("and not multi-threading")
 
+def dbOperation(df):
+    for index, row in df.iterrows():
+            cursor.execute(
+                """
+                INSERT INTO stock_data (timestamp, stock_symbol, open, high, low, close, volume)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """,
+                (
+                    row["date"],
+                    stock_symbol,
+                    row["open"],
+                    row["high"],
+                    row["low"],
+                    row["close"],
+                    row["volume"],
+                ),
+            )
+
+    conn.commit()  # Commit the transaction
+
+def stockData(instrument_token,current_start_date,enddate):
+    try:
+        # Fetch minute-wise historical data for the given range
+        historical_data = kite.historical_data(
+            instrument_token=instrument_token,
+            from_date=current_start_date,
+            to_date=enddate,
+            interval="minute",
+        )
+
+        # Convert the data to a DataFrame
+        df = pd.DataFrame.from_records(historical_data)
+        dbOperation(df)
+        # Insert the data into the database
+
+    except KeyError as e:
+        print(f"Error: {e}")
+
+    except NetworkException as e:
+        print(f"Network error while processing symbol {stock_symbol}: {str(e)}")
+        time.sleep(60)
+
+    except InputException as e:
+        print(f"Input error for symbol {stock_symbol}: {str(e)}")
+
+    except DataException as e:
+        print(f"Data error for symbol {stock_symbol}: {str(e)}")
+
+    except TokenException as e:
+        print(f"Token error for symbol {stock_symbol}: {str(e)}")
+
+    except Exception as e:
+        error_message = str(e)
+        if "429" in error_message or "rate limit" in error_message.lower():
+            print(f"Rate limit exceeded: {e}")
+
+        else:
+            print(f"An unexpected error occurred: {e}")
+
 
 def getData(instrument_token, current_start_date):
 
     try:
         current_end_date = current_start_date + timedelta(days=60)
         print(current_end_date)
+
+        stockData(instrument_token,current_start_date,current_end_date)
+
+
+
         if current_end_date >= datetime.now().date():
             return datetime.now().date()
-        else:    return current_end_date
+        else:
+            return current_end_date
     except Exception as e:
         error_message = str(e)
         if "429" in error_message or "rate limit" in error_message.lower():
@@ -99,6 +164,9 @@ if __name__ == "__main__":
     i = 1
     endDAte = start_date
     token = 351315
+
+    for stock_symbol, instrument_token in symbol_token_dict.items():
+        pass
     while endDAte < today:
         try:
             endDAte = getData(token, endDAte)
@@ -106,4 +174,4 @@ if __name__ == "__main__":
         except Exception as e:
             print("Error:", str(e))
             break
-    cursor.close();
+    cursor.close()
