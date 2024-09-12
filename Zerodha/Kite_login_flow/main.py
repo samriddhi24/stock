@@ -21,6 +21,15 @@ import asyncio
 )
 cursor = conn.cursor()
 """
+conn = psycopg2.connect(
+    dbname="stocks",
+    user="postgres",
+    password="admin123",
+    host="localhost",
+    port="5432",
+)
+cursor = conn.cursor()
+
 # Kite Connect setup
 kite = Login().get_kite_connect()
 
@@ -61,43 +70,40 @@ def getData(instrument_token, current_start_date):
 
     try:
         current_end_date = current_start_date + timedelta(days=60)
-
-
-        # Function call to kiteDATA
-
-
         print(current_end_date)
-        if current_end_date >= today:
-            return today
-        else:
-            return current_end_date
+        if current_end_date >= datetime.now().date():
+            return datetime.now().date()
+        else:    return current_end_date
     except Exception as e:
-        print(f"An unexpected error occurred: {str(e)}")
+        error_message = str(e)
+        if "429" in error_message or "rate limit" in error_message.lower():
+            print(f"Rate limit exceeded: {e}")
+            return ""
+        else:
+            print(f"An unexpected error occurred: {e}")
 
 
 def println(text):
     for _ in range(20):
         print("*", sep="", end="")
         print(f"****************************\t{text}\t*******************")
-        print("*", sep="", end="\n")
+        print("*", sep="", end="")
 
 
-today = datetime.now().date()
 if __name__ == "__main__":
-
+    today = datetime.now().date()
     start_date = today - timedelta(days=3653)  # Approximate 10 years
-    # print(start_date)
-    # print(start_date + timedelta(days=60))
+    print(start_date)
+    print(start_date + timedelta(days=60))
+    days_per_batch = 60
+    i = 1
     endDAte = start_date
     token = 351315
-    for stock_symbol, instrument_token in symbol_token_dict.items():
-        println(f"working on {stock_symbol}")
-    # while endDAte < today:
-        if endDAte < today:
-            try:
-                endDAte = getData(instrument_token, endDAte)
-                print("end: ", endDAte)
-            except Exception as e:
-                print("Error:", str(e))
-                break
-    endDAte = start_date
+    while endDAte < today:
+        try:
+            endDAte = getData(token, endDAte)
+            print("end: ", endDAte)
+        except Exception as e:
+            print("Error:", str(e))
+            break
+    cursor.close();
