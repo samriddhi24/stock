@@ -10,6 +10,10 @@ from kiteconnect.exceptions import (
     InputException,
 )
 import asyncio
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 # Database connection setup
 """conn = psycopg2.connect(
@@ -91,6 +95,14 @@ def stockData(instrument_token, current_start_date, enddate):
         else:
             print(f"An unexpected error occurred: {e}")
 
+def loop(token,endDate):
+    while endDAte < today:
+        try:
+            endDAte = getData(token, endDAte)
+            print("end: ", endDAte)
+        except Exception as e:
+            print("Error:", str(e))
+            break
 
 def getData(instrument_token, current_start_date):
 
@@ -120,13 +132,18 @@ def println(text):
         print("*", sep="", end="")
 
 
+load_dotenv()
+
+
+
 if __name__ == "__main__":
+    # DB CONFIG
     conn = psycopg2.connect(
-        dbname="stocks",
-        user="postgres",
-        password="admin123",
-        host="localhost",
-        port="5432",
+        dbname=os.environ['DB'],
+        user=os.environ['DBUSER'],
+        password=os.environ['DBPASS'],
+        host=os.environ['DBHOST'],
+        port=os.environ['DBPORT'],
     )
     cursor = conn.cursor()
 
@@ -158,21 +175,12 @@ if __name__ == "__main__":
     }
 
     today = datetime.now().date()
-    start_date = today - timedelta(days=3653)  # Approximate 10 years
-    print(start_date)
-    print(start_date + timedelta(days=60))
-    days_per_batch = 60
-    i = 1
+    # Approximate 10 years
+    start_date = today - timedelta(days=3653)  
     endDAte = start_date
-    token = 351315
 
     for stock_symbol, instrument_token in symbol_token_dict.items():
+        print(stock_symbol)
         pass
-    while endDAte < today:
-        try:
-            endDAte = getData(token, endDAte)
-            print("end: ", endDAte)
-        except Exception as e:
-            print("Error:", str(e))
-            break
+    
     cursor.close()
