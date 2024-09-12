@@ -21,41 +21,6 @@ import asyncio
 )
 cursor = conn.cursor()
 """
-conn = psycopg2.connect(
-    dbname="stocks",
-    user="postgres",
-    password="admin123",
-    host="localhost",
-    port="5432",
-)
-cursor = conn.cursor()
-
-# Kite Connect setup
-kite = Login().get_kite_connect()
-
-# Dictionary of symbols and their corresponding instrument tokens
-symbol_token_dict = {
-    "ASIANPAINT": 60417,
-    "HDFCBANK": 341249,
-    "HINDUNILVR": 356865,
-    "INFY": 408065,
-    "ITC": 424961,
-    "KOTAKBANK": 492033,
-    "RELIANCE": 738561,
-    "SBIN": 779521,
-    "SUNPHARMA": 857857,
-    "TATAMOTORS": 884737,
-    "TATASTEEL": 895745,
-    "ICICIBANK": 1270529,
-    "AXISBANK": 1510401,
-    "BHARTIARTL": 2714625,
-    "MARUTI": 2815745,
-    "LT": 2939649,
-    "TCS": 2953217,
-    "NTPC": 2977281,
-    "POWERGRID": 3834113,
-    "MUTHOOTFIN": 6054401,
-}
 
 
 async def fn():
@@ -65,27 +30,29 @@ async def fn():
     await asyncio.sleep(1)
     print("and not multi-threading")
 
+
 def dbOperation(df):
     for index, row in df.iterrows():
-            cursor.execute(
-                """
+        cursor.execute(
+            """
                 INSERT INTO stock_data (timestamp, stock_symbol, open, high, low, close, volume)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
             """,
-                (
-                    row["date"],
-                    stock_symbol,
-                    row["open"],
-                    row["high"],
-                    row["low"],
-                    row["close"],
-                    row["volume"],
-                ),
-            )
+            (
+                row["date"],
+                stock_symbol,
+                row["open"],
+                row["high"],
+                row["low"],
+                row["close"],
+                row["volume"],
+            ),
+        )
 
     conn.commit()  # Commit the transaction
 
-def stockData(instrument_token,current_start_date,enddate):
+
+def stockData(instrument_token, current_start_date, enddate):
     try:
         # Fetch minute-wise historical data for the given range
         historical_data = kite.historical_data(
@@ -131,9 +98,7 @@ def getData(instrument_token, current_start_date):
         current_end_date = current_start_date + timedelta(days=60)
         print(current_end_date)
 
-        stockData(instrument_token,current_start_date,current_end_date)
-
-
+        stockData(instrument_token, current_start_date, current_end_date)
 
         if current_end_date >= datetime.now().date():
             return datetime.now().date()
@@ -156,6 +121,42 @@ def println(text):
 
 
 if __name__ == "__main__":
+    conn = psycopg2.connect(
+        dbname="stocks",
+        user="postgres",
+        password="admin123",
+        host="localhost",
+        port="5432",
+    )
+    cursor = conn.cursor()
+
+    # Kite Connect setup
+    kite = Login().get_kite_connect()
+
+    # Dictionary of symbols and their corresponding instrument tokens
+    symbol_token_dict = {
+        "ASIANPAINT": 60417,
+        "HDFCBANK": 341249,
+        "HINDUNILVR": 356865,
+        "INFY": 408065,
+        "ITC": 424961,
+        "KOTAKBANK": 492033,
+        "RELIANCE": 738561,
+        "SBIN": 779521,
+        "SUNPHARMA": 857857,
+        "TATAMOTORS": 884737,
+        "TATASTEEL": 895745,
+        "ICICIBANK": 1270529,
+        "AXISBANK": 1510401,
+        "BHARTIARTL": 2714625,
+        "MARUTI": 2815745,
+        "LT": 2939649,
+        "TCS": 2953217,
+        "NTPC": 2977281,
+        "POWERGRID": 3834113,
+        "MUTHOOTFIN": 6054401,
+    }
+
     today = datetime.now().date()
     start_date = today - timedelta(days=3653)  # Approximate 10 years
     print(start_date)
